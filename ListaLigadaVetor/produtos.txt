@@ -1,0 +1,5 @@
+1 Verde 43,00 Couro 45 120,00 M
+2 Preto 39,00 Malha 10 119,00 U
+3 Branco 34,00 Nylon 55 100,00 U
+4 Azul 38,00 Tecido 23 99,00 U
+5 Laranja 33,00 Couro 97 419,00 F
