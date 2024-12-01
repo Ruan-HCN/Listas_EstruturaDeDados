@@ -1,11 +1,14 @@
 /******************************************************************
- * Nome: Fila                                                    *
- * Descrição: Implementação de uma fila para manipulação de      * 
- *            produtos. Este código inclui as principais          * 
- *            operações da fila, como:                           *      
+ * Nome: Fila com Vetor                                           *
+ * Descrição: Implementação de uma fila com vetor para            *
+ *            manipulação de produtos. Este código inclui as      *
+ *            principais operações da fila, como:                 *
+ *            dequeue                                             *
+ *            enqueue                                             *
+ *            verInicio                                           *      
  *                                                                *
  * Autor: Ruan Henry                                              *
- * Última alteração: 27/11/2024                                   *
+ * Última alteração: 01/12/2024                                   *
  ******************************************************************/
 
 
@@ -15,6 +18,7 @@
 #include <string.h>
 #include <locale.h>
 
+#define MAX 5
 
 /*Definicao da estrutura*/
 typedef struct Produto{
@@ -28,10 +32,12 @@ typedef struct Produto{
     struct Produto *prox;
 }Produto;
 
-/* Estrutura que representa a fila, com dois ponteiros, um para o inicio e um para o final*/
+/* Estrutura que representa a fila, com a representação do seu inicio, fim e tamanho. E um array para armazenar os produtos*/
 typedef struct {
-	Produto *inicio;
-	Produto *fim;       
+	Produto produtos[MAX];
+	int inicio;
+	int fim;
+	int tamanho;       
 }Fila;
 
 
@@ -42,95 +48,103 @@ void limparBuffer() {
 }
 
 
-/* Nome: criarProduto
- * Parâmetro: id - identificador único do produto
- *            cor_do_tenis - cor do tênis
- *            tamanho - tamanho do tênis
- *            material - material do tênis
- *            lote - número do lote
- *            valor - valor do produto
- *            genero - gênero do produto
- * Retorno: retorna um ponteiro para um novo produto alocado dinamicamente
- * Descrição: Cria um novo produto com os atributos fornecidos e retorna
- *            um ponteiro para ele.
- */
-Produto* criarProduto(int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero){
-	Produto *novo = (Produto*)malloc(sizeof(Produto)); //Aloca memória para um novo produto
-	novo->id = id;
-	strcpy(novo->cor_do_tenis, cor_do_tenis); //Define os atributos do produto
-	novo->tamanho = tamanho;
-	strcpy(novo->material, material);
-	novo->lote = lote;
-	novo->valor = valor;
-	novo->genero = genero;
-	novo->prox = NULL; //Inicializa o próximo elemento como NULL 
-	return novo;
-}
-
-
 /* Nome: iniciarFila
  * Parâmetro: fila - ponteiro para a fila de produtos
- * Descrição: Inicializa a fila de produtos, definindo o ponteiro de início e de fim
- *            como NULL, indicando que a fila está vazia.
+ * Descrição: Inicializa a fila de produtos, definindo o ponteiro de início como 0 e de fim
+ *            como -1, indicando que a fila está vazia.
  */
 void iniciarFila(Fila *fila){
-	fila->inicio = NULL;   //Define o início da fila como NULL (vazia)
-	fila->fim = NULL;   //Define o fim da fila como NULL (vazia)
+	fila->inicio = 0;   
+	fila->fim = -1;
+	fila->tamanho = 0;   
 }
 
 
-void enqueue(Fila *fila, Produto *novo){
-	if(fila->fim == NULL){
-		fila->inicio = novo;
-		fila->fim = novo;
+/* Nome: filaCheia
+ * Parâmetro: fila - ponteiro para a fila de produtos
+ * Descrição: verifica se a fila esta no seu tamanho maximo.
+ */
+int filaCheia(Fila *fila){
+	return fila->tamanho == MAX;
+}
+
+/* Nome: filaVazia
+ * Parâmetro: fila - ponteiro para a fila de produtos
+ * Descrição: verifica se a fila esta Vazia.
+ */
+int filaVazia(Fila *fila){
+	return fila->tamanho == 0;
+}
+
+
+/* Nome: enqueue
+ * Parâmetro: fila - ponteiro para a fila de produtos
+              produto - variavel do tipo produto 
+ * Descrição: Verifica se a fila esta cheia, se não,
+              o fila->fim é usado para indicar a posição do elemento a ser inserio
+              atraves do resto da divisao pela constante maximo. E por fim incrementa o tamanho da fila.
+ */
+void enqueue(Fila *fila, Produto produto){
+	if(filaCheia(fila)){
+		printf("\nA fila esta cheia!\n");
+		return;
 	}
 	
-	else{
-		fila->fim->prox = novo;
-		fila->fim = novo;
-	}
+	fila->fim = (fila->fim + 1) % MAX;
+	fila->produtos[fila->fim] = produto;
+	fila->tamanho++;
 }
 
 
+/* Nome: dequeue
+ * Parâmetro: fila - ponteiro para a fila de produtos
+              produto - variavel do tipo produto 
+ * Descrição: Verifica se a fila esta vazia, se não,
+              o fila->inicio é usado para indicar a posição do primeiro elemento
+              a ser "removiso". e por fim decrementa o tamanho da fila.
+ */
 void dequeue(Fila *fila){
-	if(fila->inicio == NULL){
+	if(filaVazia(fila)){
 		printf("\nA fia esta vazia!\n");
 		return;
 	}
 	
-	Produto *temp = fila->inicio;
-	fila->inicio = fila->inicio->prox;
-	
-	if (fila->inicio == NULL) {
-        fila->fim = NULL;
-    }
-    
-    free(temp);
+	fila->inicio = (fila->inicio + 1) % MAX;
+	fila->tamanho--;
     printf("\nProduto removido da fila com sucesso!\n");
 }
 
+
+/* Nome: verInicio
+ * Parâmetro: fila - ponteiro para a fila de produtos
+ * Descrição: Verifica se a fila esta vazia, se não,
+              exibe a o primeiro elemento da fila. 
+ */
 void verInicio(Fila *fila) {
-    if (fila->inicio == NULL) {
+    if (filaVazia(fila)) {
         printf("\nFila Vazia!\n");
         return;
     }
 
-    Produto *temp = fila->inicio;
+    Produto *produto = &fila->produtos[fila->inicio];
     printf("ID: %d\nCor do Tenis: %s\nTamanho: %.2f\nMaterial: %s\nLote: %d\nValor: %.2f\nGenero: %c\n\n",
-           temp->id, temp->cor_do_tenis, temp->tamanho, temp->material, temp->lote, temp->valor, temp->genero);
+           produto->id, produto->cor_do_tenis, produto->tamanho, produto->material, produto->lote, produto->valor, produto->genero);
 }
 
+
+/* Nome: excluirFila
+ * Parâmetro: fila - ponteiro para a fila de produtos
+ * Descrição: Verifica se a fila esta vazia, se não,
+              "reinicia" a fila. 
+ */
 void excluirFila(Fila *fila){
-	Produto *temp = fila->inicio;
-	
-	while(temp != NULL){
-		Produto *prox = temp->prox;
-		free(temp);
-		temp = prox;
+	if(filaVazia(fila)){
+		printf("\nA fila esta Vazia!\n");
+		return;
 	}
 	
-	fila->inicio = NULL;
-	fila->fim = NULL;
+	iniciarFila(fila);
+	printf("\nFila Excluida!\n");
 }
 
 
@@ -150,13 +164,10 @@ void carregarDados(Fila *fila, char *nomeArquivo) {
     
     excluirFila(fila); //Exclui a fila atual para evitar duplicatas
     
-    int id, lote;
-    char cor[30], material[30], genero;
-    float tamanho, valor;
+    Produto produto;
     
-    while (fscanf(arquivo, "%d %s %f %s %d %f %c", &id, cor, &tamanho, material, &lote, &valor, &genero) != EOF) {
-        Produto *novo = criarProduto(id, cor, tamanho, material, lote, valor, genero); //Cria um novo produto
-        enqueue(fila, novo); //Insere o produto na fila
+    while (fscanf(arquivo, "%d %s %f %s %d %f %c", &produto.id, produto.cor_do_tenis, &produto.tamanho, produto.material, &produto.lote, &produto.valor, &produto.genero) != EOF){
+        enqueue(fila, produto); //Insere o produto na fila
     }
     
     fclose(arquivo); //Fecha o arquivo
@@ -164,7 +175,18 @@ void carregarDados(Fila *fila, char *nomeArquivo) {
 }
 
 
+/* Nome: salvarDados
+ * Parâmetro: fila - ponteiro para a fila de produtos
+ *            nomeArquivo - nome do arquivo de onde os dados serão carregados
+ * Descrição: Salva os dados da fila em um arquivo txt, atraves do loop for, que percorre a fila
+              e escreve os elementos no arquivo e texto.
+ */
 void salvarDados(Fila *fila, char *nomeArquivo) {
+	if(filaVazia(fila)){
+		printf("\nA fila esta vazia!\n");
+		return;
+	}
+	
     FILE *arquivo = fopen(nomeArquivo, "w"); //Abre o arquivo em modo de escrita
     
     if (arquivo == NULL) { //Verifica se o arquivo foi aberto corretamente
@@ -172,11 +194,12 @@ void salvarDados(Fila *fila, char *nomeArquivo) {
         return;
     }
     
-    Produto *temp = fila->inicio;  //Percorre a fila para salvar os dados
+    int i;
     
-    while (temp != NULL) {
-        fprintf(arquivo, "%d %s %.2f %s %d %.2f %c\n", temp->id, temp->cor_do_tenis, temp->tamanho, temp->material, temp->lote, temp->valor, temp->genero);
-        temp = temp->prox;
+    for (i = 0; i < fila->tamanho; i++) {
+    	int prox = (fila->inicio + 1) % MAX;
+    	Produto *produto = &fila->produtos[prox];
+        fprintf(arquivo, "%d %s %.2f %s %d %.2f %c\n", produto->id, produto->cor_do_tenis, produto->tamanho, produto->material, produto->lote, produto->valor, produto->genero);
     }
     
     fclose(arquivo); //Fecha o arquivo
@@ -213,6 +236,11 @@ int main() {
         
         switch(escolha){
 			 case 1:
+			 	if (filaCheia(&fila)) {
+                    printf("\nA fila está cheia!\n");
+                    break;
+                }
+                
                 printf("\n\nID: ");
                 scanf("%d", &id);
                 printf("Cor do Tênis: ");
@@ -229,7 +257,12 @@ int main() {
                 limparBuffer();
                 printf("Gênero: ");
                 scanf(" %c", &genero);
-                enqueue(&fila, criarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto na fila
+                
+                Produto produto = {id, "", tamanho, "", lote, valor, genero};
+                strcpy(produto.cor_do_tenis, cor_do_tenis);
+                strcpy(produto.material, material);
+                enqueue(&fila, produto); //insere elemnto na fila
+                printf("\nProduto Inserido!\n");
                 break;
             
             case 2:
