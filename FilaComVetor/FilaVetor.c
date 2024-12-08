@@ -8,7 +8,7 @@
  *            verInicio                                           *      
  *                                                                *
  * Autor: Ruan Henry                                              *
- * Última alteração: 01/12/2024                                   *
+ * Última alteração: 08/12/2024                                   *
  ******************************************************************/
 
 
@@ -53,10 +53,19 @@ void limparBuffer() {
  * Descrição: Inicializa a fila de produtos, definindo o ponteiro de início como 0 e de fim
  *            como -1, indicando que a fila está vazia.
  */
-void iniciarFila(Fila *fila){
+Fila* iniciarFila(){
+	Fila *fila = (Fila*)malloc(sizeof(Fila));
+	
+	if(fila == NULL){
+		printf("\nA fila não foi criada!\n");
+		return NULL;
+	}
+	
 	fila->inicio = 0;   
 	fila->fim = -1;
-	fila->tamanho = 0;   
+	fila->tamanho = 0;
+	
+	return fila;   
 }
 
 
@@ -84,15 +93,22 @@ int filaVazia(Fila *fila){
               o fila->fim é usado para indicar a posição do elemento a ser inserio
               atraves do resto da divisao pela constante maximo. E por fim incrementa o tamanho da fila.
  */
-void enqueue(Fila *fila, Produto produto){
+int enqueue(Fila *fila, Produto produto){
+	if(fila == NULL){
+		printf("\nA fila não foi criada!\n");
+		return 0;
+	}
+	
 	if(filaCheia(fila)){
 		printf("\nA fila esta cheia!\n");
-		return;
+		return 0;
 	}
 	
 	fila->fim = (fila->fim + 1) % MAX;
 	fila->produtos[fila->fim] = produto;
 	fila->tamanho++;
+	
+	return 1;
 }
 
 
@@ -103,15 +119,22 @@ void enqueue(Fila *fila, Produto produto){
               o fila->inicio é usado para indicar a posição do primeiro elemento
               a ser "removiso". e por fim decrementa o tamanho da fila.
  */
-void dequeue(Fila *fila){
+int dequeue(Fila *fila){
+	if(fila == NULL){
+		printf("\nA fila não foi criada!\n");
+		return 0;
+	}
+	
 	if(filaVazia(fila)){
 		printf("\nA fia esta vazia!\n");
-		return;
+		return 0;
 	}
 	
 	fila->inicio = (fila->inicio + 1) % MAX;
 	fila->tamanho--;
     printf("\nProduto removido da fila com sucesso!\n");
+    
+    return 1;
 }
 
 
@@ -120,15 +143,22 @@ void dequeue(Fila *fila){
  * Descrição: Verifica se a fila esta vazia, se não,
               exibe a o primeiro elemento da fila. 
  */
-void verInicio(Fila *fila) {
+int verInicio(Fila *fila) {
+	if(fila == NULL){
+		printf("\nA fila não foi criada!\n");
+		return 0;
+	}
+	
     if (filaVazia(fila)) {
         printf("\nFila Vazia!\n");
-        return;
+        return 0;
     }
 
     Produto *produto = &fila->produtos[fila->inicio];
     printf("ID: %d\nCor do Tenis: %s\nTamanho: %.2f\nMaterial: %s\nLote: %d\nValor: %.2f\nGenero: %c\n\n",
            produto->id, produto->cor_do_tenis, produto->tamanho, produto->material, produto->lote, produto->valor, produto->genero);
+           
+    return 1; 
 }
 
 
@@ -137,14 +167,21 @@ void verInicio(Fila *fila) {
  * Descrição: Verifica se a fila esta vazia, se não,
               "reinicia" a fila. 
  */
-void excluirFila(Fila *fila){
+int excluirFila(Fila *fila){
+	if(fila == NULL){
+		printf("\nA fila não foi criada!\n");
+		return 0;
+	}
+	
 	if(filaVazia(fila)){
 		printf("\nA fila esta Vazia!\n");
-		return;
+		return 0;
 	}
 	
 	iniciarFila(fila);
 	printf("\nFila Excluida!\n");
+	
+	return 1;
 }
 
 
@@ -208,8 +245,8 @@ void salvarDados(Fila *fila, char *nomeArquivo) {
 
 
 int main() {
-	Fila fila;
-	iniciarFila(&fila);
+	Fila *fila;
+	fila = iniciarFila();
 	
 	//variaveis e definição de linguagem
 	int escolha, id, lote;
@@ -236,7 +273,7 @@ int main() {
         
         switch(escolha){
 			 case 1:
-			 	if (filaCheia(&fila)) {
+			 	if (filaCheia(fila)) {
                     printf("\nA fila está cheia!\n");
                     break;
                 }
@@ -261,33 +298,33 @@ int main() {
                 Produto produto = {id, "", tamanho, "", lote, valor, genero};
                 strcpy(produto.cor_do_tenis, cor_do_tenis);
                 strcpy(produto.material, material);
-                enqueue(&fila, produto); //insere elemnto na fila
+                enqueue(fila, produto); //insere elemnto na fila
                 printf("\nProduto Inserido!\n");
                 break;
             
             case 2:
-                dequeue(&fila);
+                dequeue(fila);
                 break;
             
             case 3:
             	printf("\n");
-                verInicio(&fila);
+                verInicio(fila);
                 break;
             
             case 4:
-            	excluirFila(&fila);
+            	excluirFila(fila);
                 break;
             
             case 5:
-            	salvarDados(&fila, NomeArquivo); //salva os dados da lista num txt
+            	salvarDados(fila, NomeArquivo); //salva os dados da lista num txt
                 break;
             
             case 6:
-                carregarDados(&fila, NomeArquivo); //carregar os dados do txt
+                carregarDados(fila, NomeArquivo); //carregar os dados do txt
                 break;
             
             case 7:
-                excluirFila(&fila); //exclui todos os elementos e sai do script
+                excluirFila(fila); //exclui todos os elementos e sai do script
                 printf("\nSaindo...\n");
                 break;
             

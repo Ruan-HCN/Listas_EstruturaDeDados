@@ -11,7 +11,7 @@
  *            atualizar elementos,                                *
  *            excluir lista.                                      *
  * Autor: Ruan Henry                                              *
- * Ultima alteracao: 20/11/2024                                   *
+ * Ultima alteracao: 08/12/2024                                   *
  ******************************************************************/
 
 
@@ -51,7 +51,13 @@ void LimparBuffer() {
  * Descricao: Funcao criada para buscar um elemento na lista
  */
 Produto* BuscarElemento(Lista *lista, int id){
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return NULL;
+    }
+	
 	if(lista->inicio == NULL){
+		printf("\nA lista esta vazia\n");
 		return NULL;
 	}
 	
@@ -74,8 +80,13 @@ Produto* BuscarElemento(Lista *lista, int id){
  * Descricao: Funcao responsavel por atualizar um elemento
  *            da lista, caso o mesmo esteja na lista indicada
  */
-void AtualizarProduto(Lista *lista, int id){
+int AtualizarProduto(Lista *lista, int id){
 	Produto *produto = BuscarElemento(lista, id);  //Busca o produto pelo ID
+	
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
 	
 	 //Se o produto foi encontrado
 	if (produto != NULL) {
@@ -93,11 +104,13 @@ void AtualizarProduto(Lista *lista, int id){
         LimparBuffer();
         printf("Novo gênero: ");
         scanf(" %c", &produto->genero);
+        return 1;
     } 
 	
 	//Se o produto não foi encontrado
 	else {
         printf("\nProduto não encontrado!\n");
+        return 0;
     }
 }
 
@@ -135,20 +148,50 @@ Produto* CriarProduto(int id, char *cor_do_tenis, float tamanho, char *material,
  *            o novo produto será o primeiro elemento. Caso contrário, ele será 
  *            inserido no final.
  */
-void InserirElemento(Lista *lista, Produto *novo){
-	if(lista->inicio == NULL){ //Se a lista estiver vazia, insere no início
-		lista->inicio = novo;
-		novo->prox = novo;
-	}
-	
-	else{
-		Produto *temp = lista->inicio; //Percorre até o último produto
-		while(temp->prox != lista->inicio){
-			temp = temp->prox;
-		}
-		temp->prox = novo;  //Insere o novo produto no final da lista
-		novo->prox = lista->inicio;
-	}
+int InserirElemento(Lista *lista, Produto *novo){
+	if (lista == NULL) {
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+
+    if (novo == NULL) {
+        printf("Produto invalido\n");
+        return 0;
+    }
+
+    // Aloca memória para o novo produto
+    Produto *novoProduto = (Produto *)malloc(sizeof(Produto));
+    if (novoProduto == NULL) {
+        printf("Erro ao alocar memória para o novo produto\n");
+        return 0;
+    }
+
+    // Copia os dados do produto para o novo produto alocado
+    novoProduto->id = novo->id;
+    strcpy(novoProduto->cor_do_tenis, novo->cor_do_tenis);
+    novoProduto->tamanho = novo->tamanho;
+    strcpy(novoProduto->material, novo->material);
+    novoProduto->lote = novo->lote;
+    novoProduto->valor = novo->valor;
+    novoProduto->genero = novo->genero;
+
+    // Caso a lista esteja vazia, o novo produto será o primeiro elemento
+    if (lista->inicio == NULL) {
+        lista->inicio = novoProduto;
+        novoProduto->prox = novoProduto; // Aponta para si mesmo, criando uma lista circular
+        return 1;
+    }
+
+    // Caso contrário, insere no final da lista
+    Produto *temp = lista->inicio;
+    while (temp->prox != lista->inicio) {
+        temp = temp->prox;
+    }
+
+    temp->prox = novoProduto;      // Último elemento aponta para o novo
+    novoProduto->prox = lista->inicio; // Novo elemento aponta para o início, mantendo a circularidade
+
+    return 1;
 }
 
 
@@ -157,9 +200,15 @@ void InserirElemento(Lista *lista, Produto *novo){
  * Descrição: Exclui todos os produtos da lista, liberando a memória alocada
  *            e redefinindo o ponteiro de início para NULL.
  */
-void ExcluirLista(Lista *lista){
+Lista* ExcluirLista(Lista *lista){
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return NULL;
+    }
+	
 	if(lista->inicio == NULL){
-		return;
+		printf("\nLista Vazia!\n");
+		return NULL;
 	}
 	
 	Produto *temp = lista->inicio;
@@ -171,7 +220,9 @@ void ExcluirLista(Lista *lista){
 		temp = prox;
 	}while(temp != lista->inicio);
 	
-	lista->inicio = NULL; 	
+	lista->inicio = NULL; 
+	
+	return NULL;	
 }
 
 
@@ -211,9 +262,14 @@ void CarregarDados(Lista *lista, char *nomeArquivo) {
  * Descrição: Remove um produto específico da lista com base no ID fornecido.
  *            Libera a memória alocada para o produto removido.
  */
-void RemoverElemento(Lista *lista, int id){
+int RemoverElemento(Lista *lista, int id){
 	Produto *temp = lista->inicio; //ponteiro temporario do inicio da lista
 	Produto *anterior = NULL; //ponterio para o elemento anterior
+	
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
 	
 	while(temp != NULL){ //percorre a lista
 		if(temp->id == id){ //verifica se o id corresponde
@@ -227,13 +283,14 @@ void RemoverElemento(Lista *lista, int id){
 			
 			free(temp);
 			printf("\nProduto com ID: %d. Removido com sucesso!\n", id);
-			return;
+			return 1;
 		}
 		//avança os ponteiros
 		anterior = temp;
 		temp = temp->prox;
 	}
 	printf("\nProduto com ID: %d. Não encontrado.\n", id);
+	return 0;
 }
 
 
@@ -244,6 +301,11 @@ void RemoverElemento(Lista *lista, int id){
  *            elementos para a próxima posição.
  */
 void InserirElementoInicio(Lista *lista, Produto *novo){
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return;
+    }
+	
 	if (lista->inicio == NULL) { 
         lista->inicio = novo;
         novo->prox = novo; // Torna a lista circular
@@ -272,12 +334,16 @@ void InserirElementoInicio(Lista *lista, Produto *novo){
  *            inserido na posição desejada, ou será exibida uma mensagem de erro 
  *            se a posição for inválida.
  */
-void InserirElementoPosicao(Lista *lista, Produto *novo, int posicao){
+int InserirElementoPosicao(Lista *lista, Produto *novo, int posicao){
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+	
 	if (posicao == 0) { 
         InserirElementoInicio(lista, novo);
-    } 
-	
-	else {
+        return 1;
+    } else {
         Produto *temp = lista->inicio;
         int i;
 
@@ -286,12 +352,29 @@ void InserirElementoPosicao(Lista *lista, Produto *novo, int posicao){
         }
 
         if (i == posicao - 1) {
-            novo->prox = temp->prox;
-            temp->prox = novo;
+            Produto *novoProduto = (Produto *)malloc(sizeof(Produto));
+            if (novoProduto == NULL) {
+                printf("Erro ao alocar memória para o novo produto\n");
+                return 0;
+            }
+
+            // Copia os dados do produto para o novo produto alocado
+            novoProduto->id = novo->id;
+            strcpy(novoProduto->cor_do_tenis, novo->cor_do_tenis);
+            novoProduto->tamanho = novo->tamanho;
+            strcpy(novoProduto->material, novo->material);
+            novoProduto->lote = novo->lote;
+            novoProduto->valor = novo->valor;
+            novoProduto->genero = novo->genero;
+
+            novoProduto->prox = temp->prox; // Novo elemento aponta para o próximo
+            temp->prox = novoProduto;      // Elemento atual aponta para o novo
+
+            return 1;
         } 
-		
 		else {
             printf("\nPosição inválida!\n");
+            return 0;
         }
     }
 }
@@ -302,8 +385,19 @@ void InserirElementoPosicao(Lista *lista, Produto *novo, int posicao){
  * Descrição: Inicializa a lista de produtos, definindo o ponteiro de início
  *            como NULL, indicando que a lista está vazia.
  */
-void IniciarLista(Lista *lista){
-	lista->inicio = NULL;   //Define o início da lista como NULL (vazia)
+Lista* IniciarLista(){
+	/*solicitando espaco para a lista*/
+    Lista *nova = (Lista*)malloc(sizeof(Lista));
+    
+    /*Verificando se o espaco foi resevado*/
+    if(nova == NULL){
+        printf("Sem espaco\n");
+        return NULL;
+    }
+	
+	nova->inicio = NULL;   //Define o início da lista como NULL (vazia)
+	
+	return nova;
 }
 
 
@@ -314,6 +408,11 @@ void IniciarLista(Lista *lista){
  *            final da lista.
  */
 void ListarElementos(Lista *lista) {
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return;
+    }
+	
     if(lista->inicio == NULL){
 		printf("Lista Vazia!\n");
 		return;
@@ -369,6 +468,11 @@ void SalvarDados(Lista *lista, char *nomeArquivo) {
  * Descricao: Funcao criada para saber quantos elementos a lista possui
  */
 int TamanhoLista(Lista *lista){
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+	
 	if(lista->inicio == NULL){
 		return 0;
 	}
@@ -386,8 +490,8 @@ int TamanhoLista(Lista *lista){
 
 
 int main() {
-	Lista lista;
-	lista.inicio = NULL; //Inicializa a lista como vazia
+	Lista *lista = NULL;
+	lista = IniciarLista();
 	
 	int escolha, id, posicao, lote;
 	float tamanho, valor;
@@ -431,7 +535,7 @@ int main() {
                 LimparBuffer();
                 printf("Gênero: ");
                 scanf(" %c", &genero);
-                InserirElemento(&lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto no final
+                InserirElemento(lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto no final
                 break;
             
             case 2:
@@ -451,7 +555,7 @@ int main() {
                 LimparBuffer();
                 printf("Gênero: ");
                 scanf(" %c", &genero);
-                InserirElementoInicio(&lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto no inicio
+                InserirElementoInicio(lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto no inicio
                 break;
             
             case 3:
@@ -474,24 +578,24 @@ int main() {
                 LimparBuffer();
                 printf("Gênero: ");
                 scanf(" %c", &genero);
-                InserirElementoPosicao(&lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero), posicao); //insere elemento na posição
+                InserirElementoPosicao(lista, CriarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero), posicao); //insere elemento na posição
                 break;
             
             case 4:
             	printf("\n");
-                ListarElementos(&lista); //Lista todos os elementos
+                ListarElementos(lista); //Lista todos os elementos
                 break;
             
             case 5:
                 printf("\nID do produto a ser atualizado: ");
                 scanf("%d", &id);
-                AtualizarProduto(&lista, id); //atualiza o elemento
+                AtualizarProduto(lista, id); //atualiza o elemento
                 break;
             
             case 6:
                 printf("\nID do produto a ser buscado: ");
                 scanf("%d", &id);
-                Produto *produto = BuscarElemento(&lista, id); //busca o produto
+                Produto *produto = BuscarElemento(lista, id); //busca o produto
                 if (produto != NULL) {
                     printf("\nID: %d\nCor do Tenis: %s\nTamanho: %.2f\nMaterial: %s\nLote: %d\nValor: %.2f\nGenero: %c\n",
                            produto->id, produto->cor_do_tenis, produto->tamanho, produto->material, produto->lote, produto->valor, produto->genero);
@@ -501,30 +605,30 @@ int main() {
                 break;
             
             case 7:
-                printf("\nTamanho da lista: %d\n", TamanhoLista(&lista)); //verifica quantos elementos tem a lista
+                printf("\nTamanho da lista: %d\n", TamanhoLista(lista)); //verifica quantos elementos tem a lista
                 break;
             
             case 8:
-                ExcluirLista(&lista); //exclui a lista
+                ExcluirLista(lista); //exclui a lista
                 printf("\nLista excluída!\n");
                 break;
             
             case 9:
-                CarregarDados(&lista, NomeArquivo); //carregar os dados do txt
+                CarregarDados(lista, NomeArquivo); //carregar os dados do txt
                 break;
             
             case 10:
-                SalvarDados(&lista, NomeArquivo); //salva os dados da lista num txt
+                SalvarDados(lista, NomeArquivo); //salva os dados da lista num txt
                 break;
             
             case 11:
             	printf("\nID do produto a ser removido: "); //captura o id do produto que vai ser excluido
     			scanf("%d", &id);
-            	RemoverElemento(&lista, id);
+            	RemoverElemento(lista, id);
             	break;
             
             case 12:
-                ExcluirLista(&lista); //exclui todos os elementos e sai do script
+                ExcluirLista(lista); //exclui todos os elementos e sai do script
                 printf("\nSaindo...\n");
                 break;
             

@@ -9,7 +9,7 @@
  * 			  ehVazia	                                          *      
  *                                                                *
  * Autor: Ruan Henry                                              *
- * Última alteração: 30/11/2024                                   *     
+ * Última alteração: 08/12/2024                                   *     
  *                                                                *
  * Autor: Ruan Henry                                              *                     
  ******************************************************************/
@@ -61,7 +61,9 @@ int ehVazia(Pilha *pilha) {
  *            cor_do_tenis - cor do tênis
  *            tamanho - tamanho do tênis
  *            material - material do tênis
- *            lote - número do lote
+ *            lote - número do loteif (verTopo(minhaPilha) == -1) {
+        printf("\nPilha não está mais disponível.\n");
+    }
  *            valor - valor do produto
  *            genero - gênero do produto
  * Retorno: retorna um ponteiro para um novo produto alocado dinamicamente
@@ -88,21 +90,22 @@ Produto* criarProduto(int id, char *cor_do_tenis, float tamanho, char *material,
  * Descrição: Exclui todos os produtos da pilha, liberando a memória alocada
  *            e redefinindo o ponteiro de início para NULL.
  */
-void excluirPilha(Pilha *pilha){
-	if(ehVazia(pilha)){
-		printf("\nA Pilha está vazia. Nenhum elemento a remover!\n");
-		return;
-	}
-	
-	Produto *temp = pilha->topo; //Ponteiro temporário para percorrer a pilha
-	
-	while(temp != NULL){ //Percorre a pilha liberando a memoria de cada produto
-		Produto *prox = temp->prox;
-		free(temp);
-		temp = prox; 
-	}
+Pilha* excluirPilha(Pilha *pilha){
+	if (pilha == NULL) {
+        printf("\nPilha não foi criada!\n");
+        return NULL;
+    }
 
-	pilha->topo = NULL; //Redefine o início da pilha para NULL (pilha vazia)
+	Produto *temp = pilha->topo;
+    while (temp != NULL) {
+            Produto *prox = temp->prox;
+            free(temp); // Libera cada elemento
+            temp = prox;
+   	 }
+    
+
+    free(pilha);        
+    return NULL;  
 }
 
 
@@ -110,17 +113,30 @@ void excluirPilha(Pilha *pilha){
  * Parâmetro: pilha - ponteiro que possui o endereço da pilha
  * Descrição: Mostra o elemento no topo da pilha;
  */
-void verTopo(Pilha *pilha){
-	if(ehVazia(pilha)){
-		printf("\nPilha Vazia!\n");
-		return;
-	}
-	
-	
-	Produto *temp = pilha->topo;
-	printf("ID: %d\nCor do Tenis: %s\nTamanho: %.2f\nMaterial: %s\nLote: %d\nValor: %.2f\nGenero: %c\n\n",
-               temp->id, temp->cor_do_tenis, temp->tamanho, temp->material, temp->lote, temp->valor, temp->genero);
-	
+int verTopo(Pilha *pilha){
+	// Verifica se a pilha foi criada
+    if (!pilha) {
+        printf("\nPilha não criada.\n");
+        return -1;
+    }
+
+    // Verifica se a pilha está vazia
+    if (ehVazia(pilha)) {
+        printf("\nPilha vazia.\n");
+        return 0;
+    }
+
+    Produto *topo = pilha->topo;
+   
+    printf("ID: %d\n", topo->id);
+    printf("Cor: %s\n", topo->cor_do_tenis);
+    printf("Tamanho: %.2f\n", topo->tamanho);
+    printf("Material: %s\n", topo->material);
+    printf("Lote: %d\n", topo->lote);
+    printf("Valor: %.2f\n", topo->valor);
+    printf("Gênero: %c\n", topo->genero);
+
+    return 1;
 }
 
 
@@ -130,9 +146,21 @@ void verTopo(Pilha *pilha){
  * Descrição: Insere um novo produto no topo da pilha, deslocando os outros 
  *            elementos para a próxima posição.
  */
-void push(Pilha *pilha, Produto *novo){
+int push(Pilha *pilha, Produto *novo){
+	if(pilha == NULL){
+		printf("\nA pilha não foi criada!\n");
+		return 0;
+	}
+	
+	if(novo == NULL){
+		printf("\nProduto não foi criado!\n");
+		return 0;
+	}
+	
 	novo->prox = pilha->topo; //Faz o novo produto apontar para o topo atual
     pilha->topo = novo;  //Define o novo produto como o topo da pilha
+    
+    return 1;
 }
 
 
@@ -170,16 +198,23 @@ void carregarDados(Pilha *pilha, char *nomeArquivo) {
  * Parâmetro: pilha - ponteiro para a pilha de produtos
  * Descrição: Remove o produto do topo da pilha.
  *            Libera a memória alocada para o produto removido. */
-void pop(Pilha *pilha){
+int pop(Pilha *pilha){
+	if(pilha == NULL){
+		printf("\nPilha não foi criada!\n");
+		return 0;
+	}
+	
 	if(ehVazia(pilha)){ //Verifica se a pilha esta vazia
 		printf("\nPilha Vazia!\n");
-		return;
+		return 0;
 	}
 	
 	Produto *temp = pilha->topo; //ponteiro temporario do topo da pilha		
 	pilha->topo = pilha->topo->prox; //Atualiza o topo para o proximo elemento
 	free(temp);
 	printf("\nO produto do topo foi removido com sucesso!\n");
+	
+	return 1;
 }
 
 
@@ -188,8 +223,16 @@ void pop(Pilha *pilha){
  * Descrição: Inicializa a pilha de produtos, definindo o ponteiro de início
  *            como NULL, indicando que a pilha está vazia.
  */
-void iniciarPilha(Pilha *pilha){
+Pilha* iniciarPilha(){
+	Pilha *pilha = (Pilha*)malloc(sizeof(Pilha));
+	if(pilha == NULL){
+		printf("\nFalha ao alocar memoria!\n");
+		return NULL;
+	}
+	
 	pilha->topo = NULL;   //Define o inicio da lista como NULL (vazia)
+	
+	return pilha;
 }
 
 
@@ -219,8 +262,7 @@ void salvarDados(Pilha *pilha, char *nomeArquivo) {
 
 
 int main() {
-	Pilha pilha;
-	pilha.topo = NULL; //Inicializa o topo da pilha como vazia
+	Pilha *pilha = iniciarPilha();
 	
 	//variaveis e definição de linguagem
 	int escolha, id, lote;
@@ -263,33 +305,32 @@ int main() {
                 limparBuffer();
                 printf("Gênero: ");
                 scanf(" %c", &genero);
-                push(&pilha, criarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto na pilha
+                push(pilha, criarProduto(id, cor_do_tenis, tamanho, material, lote, valor, genero)); //insere elemnto na pilha
                 break;
             
             case 2:
-                pop(&pilha);
+                pop(pilha);
                 break;
             
             case 3:
             	printf("\n");
-                verTopo(&pilha);
+                verTopo(pilha);
                 break;
             
             case 4:
-            	excluirPilha(&pilha);
-            	printf("\nTodos os elementos foram removidos com sucesso!\n");
+            	pilha = excluirPilha(pilha);
                 break;
             
             case 5:
-            	salvarDados(&pilha, NomeArquivo); //salva os dados da lista num txt
+            	salvarDados(pilha, NomeArquivo); //salva os dados da lista num txt
                 break;
             
             case 6:
-                carregarDados(&pilha, NomeArquivo); //carregar os dados do txt
+                carregarDados(pilha, NomeArquivo); //carregar os dados do txt
                 break;
             
             case 7:
-                excluirPilha(&pilha); //exclui todos os elementos e sai do script
+                excluirPilha(pilha); //exclui todos os elementos e sai do script
                 printf("\nSaindo...\n");
                 break;
             

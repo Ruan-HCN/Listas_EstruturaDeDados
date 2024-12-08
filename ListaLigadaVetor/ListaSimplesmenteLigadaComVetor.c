@@ -11,7 +11,7 @@
  *            atualizar elementos,                                *
  *            excluir lista.                                      *
  * Autor: Ruan Henry                                              *
- * Ultima alteracao: 20/10/2024                                   *
+ * Ultima alteracao: 08/12/2024                                   *
  ******************************************************************/
 
 //Include das bibliotecas
@@ -32,7 +32,7 @@ typedef struct Produto {
 } Produto;
 
 //Estrutura que representa a lista, com um vetor de produtos 
-#define MAX_PRODUTOS 1000 //Tamanho máximo da lista (vetor)
+#define MAX_PRODUTOS 5 //Tamanho máximo da lista (vetor)
 typedef struct {
     Produto produtos[MAX_PRODUTOS];  //Vetor de produtos
     int tamanho;                    //Quantidade de produtos na lista
@@ -43,10 +43,21 @@ typedef struct {
  * Parametro: void 
  * Retorno: endereco do espaco de memoria reservado pelo malloc
  * Descricao: Funcao responsavel pela criacao da lista e inicializacao
- *            do campo id e alocacao do vetor de elementos
+ *            do campo tamanho e alocacao do vetor de elementos
  */
-void CriarLista(Lista *lista) {
-    lista->tamanho = 0; //inicializa o tamnho da lista com 0
+Lista* CriarLista() {
+	Lista *nova = (Lista*)malloc(sizeof(Lista));
+
+    /*Verificando se o espaco foi resevado*/
+    if(nova == NULL){
+        printf("Nao tem espaco\n");
+        return NULL;
+    }
+    
+	nova->tamanho = 0;
+
+    /*Retonando o espaco resevado*/
+    return nova;
 }
 
 
@@ -61,7 +72,12 @@ void LimparBuffer() {
  *             novo - elemento do tipo Produto que sera adicionado na lista
  * Descricao: Funcao criada para inserir um elemento no final da lista
  */
-void InserirElemento(Lista *lista, Produto novo) {
+int InserirElemento(Lista *lista, Produto novo) {
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+	
     if (lista->tamanho < MAX_PRODUTOS) { //Verifica se a lista esta cheia
         lista->produtos[lista->tamanho] = novo; //adiciona o produto no final da lista
         lista->tamanho++; //atualiza o tamnho da lista
@@ -69,7 +85,9 @@ void InserirElemento(Lista *lista, Produto novo) {
 	
 	else {
         printf("\nLista cheia!\n"); //se a lista estiaer cheia
+        return 0;
     }
+    return 1;
 }
 
 
@@ -79,12 +97,17 @@ void InserirElemento(Lista *lista, Produto novo) {
  *             posicao - posicao que o elemento sera adicionado na lista
  * Descricao: Funcao criada para inserir um elemento na posicao indicada na lista
  */
-void InserirElementoID(Lista *lista, Produto novo, int id) {
+int InserirElementoID(Lista *lista, Produto novo, int id) {
 	int i;
+	
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
 	
     if (id < 0 || id > lista->tamanho) { //verifica se o id do elemento esta entre os limites
         printf("\nPosição inválida!\n");
-        return;
+        return 0;
     }
 
     if (lista->tamanho < MAX_PRODUTOS) { //verifica se alista não esta cheia
@@ -98,7 +121,10 @@ void InserirElementoID(Lista *lista, Produto novo, int id) {
 	
 	else {
         printf("\nLista cheia!\n"); //se a lista estiaer cheia
+        return 0;
     }
+    
+	return 1;
 }
 
 
@@ -107,8 +133,14 @@ void InserirElementoID(Lista *lista, Produto novo, int id) {
  *             novo - elemento do tipo Produto que sera adicionado na lista
  * Descricao: Funcao criada para inserir um elemento no inicio da lista
  */
-void InserirElementoInicio(Lista *lista, Produto novo) {
+int InserirElementoInicio(Lista *lista, Produto novo) {
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+	
     InserirElementoID(lista, novo, 0); //Chama a função para inserir no início, usando posição 0
+    return 1;
 }
 
 
@@ -117,8 +149,13 @@ void InserirElementoInicio(Lista *lista, Produto novo) {
  *            posicao - elemento que sera removido da lista
  * Descricao: Funcao criada para remover um elemento da lista
  */
-void RemoverElemento(Lista *lista, int id) {
+int RemoverElemento(Lista *lista, int id) {
     int i, posicao = -1;
+    
+    if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
 
     // Busca o produto pelo ID
     for (i = 0; i < lista->tamanho; i++) {
@@ -130,7 +167,7 @@ void RemoverElemento(Lista *lista, int id) {
 
     if (posicao == -1) {
         printf("\nProduto não encontrado!\n");
-        return;
+        return 0;
     }
 
     // Move os elementos após a posição para trás
@@ -140,6 +177,7 @@ void RemoverElemento(Lista *lista, int id) {
 
     lista->tamanho--; // Atualiza o tamanho da lista
     printf("\nProduto removido com sucesso!\n");
+    return 1;
 }
 
 
@@ -152,6 +190,11 @@ void RemoverElemento(Lista *lista, int id) {
 Produto* BuscarElemento(Lista *lista, int id) {
 	int i;
 	
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return NULL;
+    }
+	
 	//percorre a lista e verifica se o id informado existe, caso nao, retorna NULL 
     for (i = 0; i < lista->tamanho; i++) {
         if (lista->produtos[i].id == id) {
@@ -162,14 +205,19 @@ Produto* BuscarElemento(Lista *lista, int id) {
 }
 
 
-/* Nome: AtualizarElemento
+/* Nome: AtualizarProduto
  * Parametros: lista - ponteiro que possui o endereco lista
  *             id - id do elemento que sera alterado 
  * Descricao: Funcao responsavel por atualizar um elemento
  *            da lista, caso o mesmo esteja na lista indicada
  */
-void AtualizarProduto(Lista *lista, int id) {
+int AtualizarProduto(Lista *lista, int id) {
     Produto *produto = BuscarElemento(lista, id); //chama a função buscarelemento apra encontrar o produto e atuaizalo
+    
+    if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
     
     if (produto != NULL) {
         printf("\nNovo tamanho: ");
@@ -186,11 +234,13 @@ void AtualizarProduto(Lista *lista, int id) {
         LimparBuffer();
         printf("Novo gênero: ");
         scanf(" %c", &produto->genero);
+        return 1;
     } 
 	
 	//caso não ache, produto nao encontrado
 	else {
         printf("\nProduto não encontrado!\n");
+        return 0;
     }
 }
 
@@ -199,13 +249,18 @@ void AtualizarProduto(Lista *lista, int id) {
  * Parametro: lista - ponteiro que possui o endereco lista
  * Descricao: Funcao criada para apresentar todos elementos presentes na lista
  */
-void ListarElementos(Lista *lista) {
+int ListarElementos(Lista *lista) {
 	int i;
+	
+	if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
 	
 	//Se a lista estiver vazia
     if (lista->tamanho == 0) {
         printf("\nLista vazia!\n");
-        return;
+        return 0;
     }
 
 	//caso não, usa o for para imprimir todos os elementos da listta
@@ -215,6 +270,7 @@ void ListarElementos(Lista *lista) {
                lista->produtos[i].material, lista->produtos[i].lote, lista->produtos[i].valor, 
                lista->produtos[i].genero);
     }
+    return 1;
 }
 
 
@@ -222,8 +278,15 @@ void ListarElementos(Lista *lista) {
  * Parametro: lista - ponteiro que possui o endereco lista
  * Descricao: Funcao responsavel pela exclusao da lista
  */
-void ExcluirLista(Lista *lista) {
+Lista* ExcluirLista(Lista *lista) {
+	/*Verificando se a lista foi criada*/
+    if(lista == NULL){
+        printf("A lista nao foi criada\n");
+        return NULL;
+    }
+	
     lista->tamanho = 0; //reinicia a lista com 0 elementos
+    return NULL;
 }
 
 

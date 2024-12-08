@@ -10,7 +10,7 @@
  *            atualizar elementos,                                *
  *            excluir lista.                                      *
  * Autor: Ruan Henry                                              *
- * Ultima alteracao: 10/11/2024                                   *
+ * Ultima alteracao: 08/12/2024                                   *
  ******************************************************************/
 
 
@@ -55,6 +55,12 @@ void LimparBuffer() {
 * Retorno: Retorna o ponteiro para a lista recém-criada.*/
 Lista* CriarLista(){
 	Lista *lista = (Lista*) malloc(sizeof(Lista));
+	
+	if(lista == NULL){
+        printf("Sem espaco\n");
+        return NULL;
+    }
+	
 	lista->inicio = lista->fim = NULL;
 	lista->tamanho = 0;
 	return lista;
@@ -65,8 +71,18 @@ Lista* CriarLista(){
 * Parâmetros: lista - ponteiro para a lista onde o produto será inserido
 *             id, cor_do_tenis, tamanho, material, lote, valor, genero - dados do produto a ser inserido
 * Descrição: Insere um novo produto no final da lista.*/
-void inserirProduto(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero){
+int inserirProduto(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero){
+	if (lista == NULL) {
+        printf("A lista nao foi criada\n");
+        return 0;
+    }
+	
 	Produto *novo = (Produto*) malloc(sizeof(Produto));
+	if (novo == NULL) {
+        printf("Erro ao alocar memória para o novo produto\n");
+        return 0;
+    }
+	
 	novo->id = id;
 	strcpy(novo->cor_do_tenis, cor_do_tenis);
 	novo->tamanho = tamanho;
@@ -77,16 +93,21 @@ void inserirProduto(Lista *lista, int id, char *cor_do_tenis, float tamanho, cha
     novo->prox = NULL;
     novo->ant = lista->fim;
     
-    if(lista->fim){
-		lista->fim->prox = novo;
+    if(lista->fim == NULL){
+		novo->ant = NULL;
+		lista->inicio = novo;
+		lista->fim = novo;
 	}
 	
 	else{
-		lista->inicio = novo;
+		novo->ant = lista->fim;
+		lista->fim->prox = novo;
+		lista->fim = novo;
 	}
 	
-	lista->fim = novo;
 	lista->tamanho++;
+	
+	return 1;
 }
 
 
@@ -94,8 +115,13 @@ void inserirProduto(Lista *lista, int id, char *cor_do_tenis, float tamanho, cha
 * Descrição: Insere um produto no início da lista.
 * Parâmetros: lista, dados do produto
 */
-void inserirProdutoInicio(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero){
+int inserirProdutoInicio(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero){
 	Produto *novo = (Produto*) malloc(sizeof(Produto));
+	if (novo == NULL) {
+        printf("Erro ao alocar memória para o novo produto\n");
+        return 0;
+    }
+	
 	novo->id = id;
 	strcpy(novo->cor_do_tenis, cor_do_tenis);
 	novo->tamanho = tamanho;
@@ -116,6 +142,7 @@ void inserirProdutoInicio(Lista *lista, int id, char *cor_do_tenis, float tamanh
 	
 	lista->inicio = novo;
 	lista->tamanho++;
+	return 1;
 }
 
 
@@ -123,7 +150,7 @@ void inserirProdutoInicio(Lista *lista, int id, char *cor_do_tenis, float tamanh
 *  Parâmetros: lista - ponteiro para a lista
 *             dados do produto, pos - posição onde será inserido
 * Descrição: Insere um produto em uma posição específica da lista.*/
-void inserirProdutoID(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero, int pos) {
+int inserirProdutoID(Lista *lista, int id, char *cor_do_tenis, float tamanho, char *material, int lote, float valor, char genero, int pos) {
 	int i;
 	
     if (pos <= 0) {
@@ -136,6 +163,11 @@ void inserirProdutoID(Lista *lista, int id, char *cor_do_tenis, float tamanho, c
 	
 	else {
         Produto *novo = (Produto*) malloc(sizeof(Produto));
+        if (novo == NULL) {
+            printf("Erro ao alocar memória para o novo produto\n");
+            return 0;  
+        }
+        
         novo->id = id;
         strcpy(novo->cor_do_tenis, cor_do_tenis);
         novo->tamanho = tamanho;
@@ -152,24 +184,33 @@ void inserirProdutoID(Lista *lista, int id, char *cor_do_tenis, float tamanho, c
 
         novo->prox = temp;
         novo->ant = temp->ant;
-        if (temp->ant) temp->ant->prox = novo;
+        if (temp->ant) {
+		temp->ant->prox = novo;
+		}
         temp->ant = novo;
 
         lista->tamanho++;
+        return 1;
     }
+    return 0;
 }
 
 
 /* Função: AtualizarProduto
 * Descrição: Atualiza os dados de um produto em uma posição específica da lista.
 * Parâmetros: lista, pos - posição do produto a ser atualizado, novos dados*/
-void AtualizarProduto(Lista *lista, int pos, int novoId, char *novaCor, float novoTamanho, char *novoMaterial, int novoLote, float novoValor, char novoGenero) {
+int AtualizarProduto(Lista *lista, int pos, int novoId, char *novaCor, float novoTamanho, char *novoMaterial, int novoLote, float novoValor, char novoGenero) {
 	int i;
 	
-    if (pos < 0 || pos >= lista->tamanho) return;
+    if (pos < 0 || pos >= lista->tamanho) {
+    	printf("\nPosição Invalida!\n");
+    	return 0;
+	}
 
     Produto *temp = lista->inicio;
-    for (i = 0; i < pos; i++) temp = temp->prox;
+    for (i = 0; i < pos; i++){
+		temp = temp->prox;
+	}
 
     temp->id = novoId;
     strcpy(temp->cor_do_tenis, novaCor);
@@ -178,17 +219,19 @@ void AtualizarProduto(Lista *lista, int pos, int novoId, char *novaCor, float no
     temp->lote = novoLote;
     temp->valor = novoValor;
     temp->genero = novoGenero;
+    
+    return 1;
 }
 
 
 /* Função: RemoverProduto
 * Descrição: Remove um produto em uma posição específica da lista.
 * Parâmetros: lista, pos - posição do produto a ser removido*/
-void RemoverProduto(Lista *lista, int pos) {
+int RemoverProduto(Lista *lista, int pos) {
 	int i;
 	
     if (pos < 0 || pos >= lista->tamanho){ 
-		return;
+		return 0;
 	}
 
     Produto *temp = lista->inicio;
@@ -199,20 +242,19 @@ void RemoverProduto(Lista *lista, int pos) {
 
     if (temp->ant){
 		temp->ant->prox = temp->prox;
-	} 
-    else {
+	}else {
 		lista->inicio = temp->prox;
 	}
 
     if (temp->prox) {
 		temp->prox->ant = temp->ant;
-	}
-    else {
+	}else {
 		lista->fim = temp->ant;
 	}
 
     free(temp);
     lista->tamanho--;
+    return 1;
 }
 
 
@@ -249,7 +291,9 @@ void listarProdutosOrdemInversa(Lista *lista) {
 Produto* BuscarProduto(Lista *lista, int id) {
     Produto *temp = lista->inicio;
     while (temp) {
-        if (temp->id == id) return temp;
+        if (temp->id == id) {
+			return temp;
+		}
         temp = temp->prox;
     }
     return NULL;
@@ -259,7 +303,17 @@ Produto* BuscarProduto(Lista *lista, int id) {
 /* Função: ExcluirLista
 * Descrição: Remove todos os produtos da lista, liberando a memória.
 * Parâmetros: lista - ponteiro para a lista a ser excluída*/
-void ExcluirLista(Lista *lista) {
+int ExcluirLista(Lista *lista) {
+	if(lista == NULL){
+		printf("\nA lista não foi criada!\n");
+		return 0;
+	}
+	
+	if(lista->inicio == NULL){
+		printf("\nLista Vazia!\n");
+		return 0;
+	}
+	
     Produto *temp = lista->inicio;
     while (temp) {
         Produto *prox = temp->prox;
@@ -268,6 +322,7 @@ void ExcluirLista(Lista *lista) {
     }
     lista->inicio = lista->fim = NULL;
     lista->tamanho = 0;
+    return 1;
 }
 
 
@@ -342,7 +397,9 @@ void SalvarDados(Lista *lista, char *nomeArquivo) {
 }
 
 int main(){
-	Lista *lista = CriarLista();
+	Lista *lista = NULL;
+	lista = CriarLista();
+	
     int escolha, id, pos, lote;
     char cor[30], material[30], genero;
     float tamanho, valor;
